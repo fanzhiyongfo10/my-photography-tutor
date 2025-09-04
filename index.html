@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 摄影导师</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            color: #1f2937;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 2rem;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .card {
+            background-color: #ffffff;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+        }
+        .file-upload-label {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            border: 2px dashed #9ca3af;
+            border-radius: 1rem;
+            padding: 2rem;
+            cursor: pointer;
+            transition: all 0.3s ease-in-out;
+        }
+        .file-upload-label:hover {
+            border-color: #4f46e5;
+            background-color: #eef2ff;
+        }
+        .button {
+            background-color: #4f46e5;
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            transition: background-color 0.3s ease;
+        }
+        .button:hover:not(:disabled) {
+            background-color: #4338ca;
+        }
+        .button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .alert-box {
+            padding: 1rem;
+            border-radius: 0.75rem;
+            font-size: 0.875rem;
+        }
+        .alert-error {
+            background-color: #fecaca;
+            color: #b91c1c;
+        }
+        .loading-spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid #fff;
+            border-radius: 50%;
+            width: 1.5rem;
+            height: 1.5rem;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center">
+
+    <div class="container">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl font-extrabold text-gray-900 mb-2">📸 AI 摄影导师</h1>
+            <p class="text-lg text-gray-600">你的专属摄影助手</p>
+        </header>
+
+        <main class="flex-grow flex flex-col justify-center">
+            
+            <!-- 文件上传卡片 -->
+            <div class="card text-center">
+                <h2 class="text-2xl font-bold mb-4">上传照片</h2>
+                <div class="mb-4">
+                    <label for="file-input" class="file-upload-label">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-400 mb-2" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd" />
+                        </svg>
+                        <p class="text-gray-500 font-medium">点击或拖拽文件到这里</p>
+                        <p id="file-name" class="text-gray-400 text-sm mt-1"></p>
+                    </label>
+                    <input type="file" id="file-input" accept="image/*" class="hidden">
+                </div>
+            </div>
+
+            <!-- 分析结果卡片 -->
+            <div class="card">
+                <h2 class="text-2xl font-bold mb-4">分析与建议</h2>
+                <div class="bg-gray-50 p-6 rounded-xl min-h-[200px] flex items-center justify-center">
+                    <p id="result" class="text-gray-700 leading-relaxed text-center">
+                        请上传照片，然后点击下方按钮获取分析和改进建议。
+                    </p>
+                </div>
+            </div>
+
+            <!-- 按钮和错误信息 -->
+            <div class="flex flex-col items-center mt-6">
+                <button id="analyze-button" class="button mb-4 px-8" disabled>
+                    <span id="button-text">获取分析</span>
+                </button>
+                <div id="alert-message" class="alert-box alert-error hidden w-full text-center">
+                    抱歉，连接或生成过程中出现错误。请检查您的 API Key 或稍后重试。
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        // AI 图像分析 API
+        async function analyzeImage(base64Image, userApiKey) {
+            const prompt = "请作为一位专业的摄影导师，对这张照片进行深入的分析和评价，并给出具体的改进建议。请从构图、光线、色彩和情感表达等方面进行详细描述。使用中文回答。";
+            const apiEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${userApiKey}`;
+
+            const payload = {
+                contents: [{
+                    parts: [
+                        { text: prompt },
+                        { inlineData: { mimeType: "image/jpeg", data: base64Image } }
+                    ]
+                }]
+            };
+
+            const response = await fetch(apiEndpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error.message || 'API 请求失败');
+            }
+
+            const result = await response.json();
+            return result.candidates[0].content.parts[0].text;
+        }
+
+        // DOM 元素
+        const fileInput = document.getElementById('file-input');
+        const fileNameDisplay = document.getElementById('file-name');
+        const analyzeButton = document.getElementById('analyze-button');
+        const resultDisplay = document.getElementById('result');
+        const alertMessage = document.getElementById('alert-message');
+        const buttonText = document.getElementById('button-text');
+        
+        let uploadedFile = null;
+        let apiKey = localStorage.getItem('gemini_api_key');
+
+        // 首次访问时，提示用户输入 API Key
+        window.onload = function() {
+            if (!apiKey) {
+                promptForApiKey();
+            }
+        };
+
+        function promptForApiKey() {
+            let key = prompt("请输入您的 Gemini API Key：");
+            if (key) {
+                localStorage.setItem('gemini_api_key', key);
+                apiKey = key;
+                alert("API Key 已保存。");
+            } else {
+                alert("没有 API Key，部分功能可能无法使用。");
+            }
+        }
+
+        // 文件选择事件
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                uploadedFile = file;
+                fileNameDisplay.textContent = file.name;
+                analyzeButton.disabled = false;
+                resultDisplay.textContent = "点击下方按钮获取分析和建议。";
+            }
+        });
+
+        // 拖拽事件
+        document.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+        }, false);
+
+        document.addEventListener('drop', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) {
+                fileInput.files = e.dataTransfer.files;
+                const changeEvent = new Event('change');
+                fileInput.dispatchEvent(changeEvent);
+            }
+        }, false);
+
+
+        // 分析按钮点击事件
+        analyzeButton.addEventListener('click', async () => {
+            if (!uploadedFile) {
+                alert("请先选择一张照片。");
+                return;
+            }
+
+            if (!apiKey) {
+                promptForApiKey();
+                return;
+            }
+
+            // 禁用按钮并显示加载状态
+            analyzeButton.disabled = true;
+            buttonText.innerHTML = `<span class="loading-spinner"></span>`;
+            resultDisplay.textContent = "正在分析中，请稍候...";
+            alertMessage.classList.add('hidden');
+
+            const reader = new FileReader();
+            reader.onloadend = async () => {
+                const base64Image = reader.result.split(',')[1];
+                try {
+                    const analysisResult = await analyzeImage(base64Image, apiKey);
+                    resultDisplay.innerHTML = analysisResult.replace(/\n/g, '<br>');
+                } catch (error) {
+                    console.error("Analysis failed:", error);
+                    resultDisplay.textContent = "分析失败，请检查您的 API Key 或网络连接。";
+                    alertMessage.classList.remove('hidden');
+                } finally {
+                    // 恢复按钮状态
+                    analyzeButton.disabled = false;
+                    buttonText.innerHTML = `获取分析`;
+                }
+            };
+            reader.readAsDataURL(uploadedFile);
+        });
+
+    </script>
+</body>
+</html>
