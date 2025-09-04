@@ -78,6 +78,12 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        #preview-image {
+            max-width: 100%;
+            height: auto;
+            border-radius: 0.75rem;
+            margin-bottom: 1rem;
+        }
     </style>
 </head>
 <body class="bg-gray-100 flex items-center justify-center">
@@ -108,6 +114,7 @@
             <!-- 分析结果卡片 -->
             <div class="card">
                 <h2 class="text-2xl font-bold mb-4">分析与建议</h2>
+                <img id="preview-image" src="#" alt="预览照片" class="hidden">
                 <div class="bg-gray-50 p-6 rounded-xl min-h-[200px] flex items-center justify-center">
                     <p id="result" class="text-gray-700 leading-relaxed text-center">
                         请上传照片，然后点击下方按钮获取分析和改进建议。
@@ -165,6 +172,7 @@
         const resultDisplay = document.getElementById('result');
         const alertMessage = document.getElementById('alert-message');
         const buttonText = document.getElementById('button-text');
+        const previewImage = document.getElementById('preview-image');
         
         let uploadedFile = null;
         let apiKey = localStorage.getItem('gemini_api_key');
@@ -195,6 +203,16 @@
                 fileNameDisplay.textContent = file.name;
                 analyzeButton.disabled = false;
                 resultDisplay.textContent = "点击下方按钮获取分析和建议。";
+                
+                // 显示图片预览
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    previewImage.src = event.target.result;
+                    previewImage.classList.remove('hidden');
+                    // 隐藏 placeholder 文本
+                    resultDisplay.classList.add('hidden');
+                };
+                reader.readAsDataURL(file);
             }
         });
 
@@ -231,9 +249,12 @@
             // 禁用按钮并显示加载状态
             analyzeButton.disabled = true;
             buttonText.innerHTML = `<span class="loading-spinner"></span>`;
+            // 显示图片预览并更新文本
+            previewImage.classList.remove('hidden');
+            resultDisplay.classList.remove('hidden');
             resultDisplay.textContent = "正在分析中，请稍候...";
             alertMessage.classList.add('hidden');
-
+            
             const reader = new FileReader();
             reader.onloadend = async () => {
                 const base64Image = reader.result.split(',')[1];
