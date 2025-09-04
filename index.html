@@ -209,7 +209,6 @@
                 reader.onload = (event) => {
                     previewImage.src = event.target.result;
                     previewImage.classList.remove('hidden');
-                    // 隐藏 placeholder 文本
                     resultDisplay.classList.add('hidden');
                 };
                 reader.readAsDataURL(file);
@@ -249,27 +248,63 @@
             // 禁用按钮并显示加载状态
             analyzeButton.disabled = true;
             buttonText.innerHTML = `<span class="loading-spinner"></span>`;
-            // 显示图片预览并更新文本
             previewImage.classList.remove('hidden');
             resultDisplay.classList.remove('hidden');
             resultDisplay.textContent = "正在分析中，请稍候...";
             alertMessage.classList.add('hidden');
             
+            // 使用 FileReader 将文件读取为数据 URL
             const reader = new FileReader();
             reader.onloadend = async () => {
-                const base64Image = reader.result.split(',')[1];
-                try {
-                    const analysisResult = await analyzeImage(base64Image, apiKey);
-                    resultDisplay.innerHTML = analysisResult.replace(/\n/g, '<br>');
-                } catch (error) {
-                    console.error("Analysis failed:", error);
-                    resultDisplay.textContent = "分析失败，请检查您的 API Key 或网络连接。";
-                    alertMessage.classList.remove('hidden');
-                } finally {
-                    // 恢复按钮状态
-                    analyzeButton.disabled = false;
-                    buttonText.innerHTML = `获取分析`;
-                }
+                const img = new Image();
+                img.onload = async () => {
+                    // 创建一个 canvas 元素用于压缩
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+
+                    // 定义最大尺寸
+                    const maxWidth = 1200;
+                    const maxHeight = 1200;
+
+                    let width = img.width;
+                    let height = img.height;
+
+                    // 按比例缩放以适应最大尺寸
+                    if (width > height) {
+                        if (width > maxWidth) {
+                            height = height * (maxWidth / width);
+                            width = maxWidth;
+                        }
+                    } else {
+                        if (height > maxHeight) {
+                            width = width * (maxHeight / height);
+                            height = maxHeight;
+                        }
+                    }
+
+                    // 设置 canvas 尺寸并绘制压缩后的图片
+                    canvas.width = width;
+                    canvas.height = height;
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    // 将 canvas 内容转换为 Base64，并以 JPEG 格式和 0.7 质量进行压缩
+                    const resizedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                    const base64Image = resizedDataUrl.split(',')[1];
+
+                    try {
+                        const analysisResult = await analyzeImage(base64Image, apiKey);
+                        resultDisplay.innerHTML = analysisResult.replace(/\n/g, '<br>');
+                    } catch (error) {
+                        console.error("Analysis failed:", error);
+                        resultDisplay.textContent = "分析失败，请检查您的 API Key 或网络连接。";
+                        alertMessage.classList.remove('hidden');
+                    } finally {
+                        // 恢复按钮状态
+                        analyzeButton.disabled = false;
+                        buttonText.innerHTML = `获取分析`;
+                    }
+                };
+                img.src = reader.result;
             };
             reader.readAsDataURL(uploadedFile);
         });
