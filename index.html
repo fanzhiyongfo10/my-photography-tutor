@@ -5,374 +5,158 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI 摄影导师</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f3f4f6;
-            color: #1f2937;
-        }
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 2rem;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-        .card {
-            background-color: #ffffff;
-            border-radius: 1.5rem;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            padding: 2rem;
-            margin-bottom: 1.5rem;
-        }
-        .file-upload-label {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            border: 2px dashed #9ca3af;
-            border-radius: 1rem;
-            padding: 2rem;
-            cursor: pointer;
-            transition: all 0.3s ease-in-out;
-        }
-        .file-upload-label:hover {
-            border-color: #4f46e5;
-            background-color: #eef2ff;
-        }
-        .button {
-            background-color: #4f46e5;
-            color: white;
-            padding: 1rem 1.5rem;
-            border-radius: 9999px;
-            font-weight: 600;
-            transition: background-color 0.3s ease;
-        }
-        .button:hover:not(:disabled) {
-            background-color: #4338ca;
-        }
-        .button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        .alert-box {
-            padding: 1rem;
-            border-radius: 0.75rem;
-            font-size: 0.875rem;
-        }
-        .alert-error {
-            background-color: #fecaca;
-            color: #b91c1c;
-        }
-        .loading-spinner {
-            border: 4px solid rgba(255, 255, 255, 0.3);
-            border-top: 4px solid #fff;
-            border-radius: 50%;
-            width: 1.5rem;
-            height: 1.5rem;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        #preview-image {
-            max-width: 100%;
-            height: auto;
-            border-radius: 0.75rem;
-            margin-bottom: 1rem;
-        }
-
-        /* Modal Styles */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-        .modal-content {
-            background-color: #ffffff;
-            padding: 2rem;
-            border-radius: 1.5rem;
-            width: 90%;
-            max-width: 400px;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-        }
-        .modal-input {
-            width: 100%;
-            padding: 0.75rem;
-            margin-top: 0.5rem;
-            border: 1px solid #d1d5db;
-            border-radius: 0.5rem;
-        }
-        .modal-button {
-            width: 100%;
-            padding: 0.75rem;
-            margin-top: 1rem;
-            background-color: #4f46e5;
-            color: white;
-            border-radius: 0.5rem;
-            font-weight: 500;
-        }
-        .modal-button:hover {
-            background-color: #4338ca;
         }
     </style>
 </head>
-<body class="bg-gray-100 flex items-center justify-center">
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
 
-    <div class="container">
-        <header class="text-center mb-8">
-            <h1 class="text-4xl font-extrabold text-gray-900 mb-2">📸 AI 摄影导师</h1>
-            <p class="text-lg text-gray-600">你的专属摄影助手</p>
-        </header>
+    <div class="bg-white p-8 rounded-2xl shadow-xl max-w-lg w-full text-center space-y-6">
+        <h1 class="text-3xl font-bold text-gray-800">AI 摄影导师</h1>
+        <p class="text-gray-600">选择一张照片，让 AI 导师为你提供专业的摄影分析和改进建议。</p>
 
-        <main class="flex-grow flex flex-col justify-center">
-            
-            <!-- 文件上传卡片 -->
-            <div class="card relative">
-                <h2 class="text-2xl font-bold mb-4">上传照片</h2>
-                <div class="absolute top-6 right-6">
-                    <button id="change-key-button" class="text-sm text-gray-500 hover:text-gray-700 transition">更改 API Key</button>
-                </div>
-                <div class="mb-4">
-                    <label for="file-input" class="file-upload-label">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-400 mb-2" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd" />
-                        </svg>
-                        <p class="text-gray-500 font-medium">点击或拖拽文件到这里</p>
-                        <p id="file-name" class="text-gray-400 text-sm mt-1"></p>
-                    </label>
-                    <input type="file" id="file-input" accept="image/*" class="hidden">
-                </div>
+        <!-- 文件输入区域 -->
+        <input type="file" id="fileInput" accept="image/*" class="hidden" onchange="previewImage()">
+        <label for="fileInput" class="cursor-pointer bg-blue-500 text-white py-3 px-6 rounded-full font-semibold hover:bg-blue-600 transition duration-300 shadow-md">
+            选择照片
+        </label>
+
+        <!-- 图像预览 -->
+        <div id="previewContainer" class="hidden mt-4">
+            <img id="imagePreview" src="#" alt="图片预览" class="w-full h-auto rounded-xl shadow-inner border border-gray-300">
+        </div>
+
+        <!-- 分析按钮和加载指示器 -->
+        <button id="analyzeButton" onclick="analyzePhoto()" class="w-full bg-green-500 text-white py-3 px-6 rounded-full font-semibold hover:bg-green-600 transition duration-300 shadow-md hidden">
+            开始分析
+        </button>
+        <div id="loadingIndicator" class="hidden mt-4 flex justify-center items-center space-x-2">
+            <svg class="animate-spin h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span class="text-gray-600">分析中...</span>
+        </div>
+
+        <!-- 分析结果显示区域 -->
+        <div id="resultContainer" class="hidden mt-6 text-left">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-2">分析结果</h2>
+            <div id="analysisResult" class="bg-gray-100 p-4 rounded-xl border border-gray-200">
+                <p class="text-gray-700 leading-relaxed"></p>
             </div>
-
-            <!-- 分析结果卡片 -->
-            <div class="card">
-                <h2 class="text-2xl font-bold mb-4">分析与建议</h2>
-                <img id="preview-image" src="#" alt="预览照片" class="hidden">
-                <div class="bg-gray-50 p-6 rounded-xl min-h-[200px] flex items-center justify-center">
-                    <p id="result" class="text-gray-700 leading-relaxed text-center">
-                        请上传照片，然后点击下方按钮获取分析和改进建议。
-                    </p>
-                </div>
-            </div>
-
-            <!-- 按钮和错误信息 -->
-            <div class="flex flex-col items-center mt-6">
-                <button id="analyze-button" class="button mb-4 px-8" disabled>
-                    <span id="button-text">获取分析</span>
-                </button>
-                <div id="alert-message" class="alert-box alert-error hidden w-full text-center">
-                    抱歉，连接或生成过程中出现错误。请检查您的 API Key 或网络连接。
-                </div>
-            </div>
-
-        </main>
-    </div>
-    
-    <!-- API Key Modal -->
-    <div id="api-key-modal" class="modal-overlay hidden">
-        <div class="modal-content">
-            <h3 class="text-xl font-bold mb-2 text-center">输入您的 Gemini API Key</h3>
-            <p class="text-sm text-gray-500 mb-4 text-center">请从 <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-blue-600 hover:underline">Google AI Studio</a> 获取 API Key。</p>
-            <input type="text" id="api-key-input" class="modal-input" placeholder="输入 API Key...">
-            <button id="save-key-button" class="modal-button button">保存</button>
         </div>
     </div>
 
-
     <script>
-        // AI 图像分析 API
-        async function analyzeImage(base64Image, userApiKey) {
-            const prompt = "请作为一位专业的摄影导师，对这张照片进行深入的分析和评价，并给出具体的改进建议。请从构图、光线、色彩和情感表达等方面进行详细描述。使用中文回答。";
-            const apiEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${userApiKey}`;
+        // 确保你的 API 密钥在这里
+        // 请将你的 Google Gemini API 密钥粘贴到下面双引号中。
+        const apiKey = "AIzaSyB0yrvRUgR8Mo_l36gdUlaa_LMj3ELeUEs"; 
 
-            const payload = {
-                contents: [{
-                    parts: [
-                        { text: prompt },
-                        { inlineData: { mimeType: "image/jpeg", data: base64Image } }
-                    ]
-                }]
-            };
+        let selectedFile = null;
 
-            const response = await fetch(apiEndpoint, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error.message || 'API 请求失败');
-            }
-
-            const result = await response.json();
-            return result.candidates[0].content.parts[0].text;
-        }
-
-        // DOM 元素
-        const fileInput = document.getElementById('file-input');
-        const fileNameDisplay = document.getElementById('file-name');
-        const analyzeButton = document.getElementById('analyze-button');
-        const resultDisplay = document.getElementById('result');
-        const alertMessage = document.getElementById('alert-message');
-        const buttonText = document.getElementById('button-text');
-        const previewImage = document.getElementById('preview-image');
-        
-        const apiKeyModal = document.getElementById('api-key-modal');
-        const apiKeyInput = document.getElementById('api-key-input');
-        const saveKeyButton = document.getElementById('save-key-button');
-        const changeKeyButton = document.getElementById('change-key-button');
-
-        let uploadedFile = null;
-        let apiKey = localStorage.getItem('gemini_api_key');
-
-        // 首次访问时，提示用户输入 API Key
-        window.onload = function() {
-            if (!apiKey) {
-                apiKeyModal.classList.remove('hidden');
-            }
-        };
-
-        // 文件选择事件
-        fileInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
+        function previewImage() {
+            const fileInput = document.getElementById('fileInput');
+            const previewContainer = document.getElementById('previewContainer');
+            const imagePreview = document.getElementById('imagePreview');
+            const analyzeButton = document.getElementById('analyzeButton');
+            const resultContainer = document.getElementById('resultContainer');
+            
+            const file = fileInput.files[0];
             if (file) {
-                uploadedFile = file;
-                fileNameDisplay.textContent = file.name;
-                analyzeButton.disabled = false;
-                resultDisplay.textContent = "点击下方按钮获取分析和建议。";
-                
-                // 显示图片预览
+                selectedFile = file;
                 const reader = new FileReader();
-                reader.onload = (event) => {
-                    previewImage.src = event.target.result;
-                    previewImage.classList.remove('hidden');
-                    resultDisplay.classList.add('hidden');
+                reader.onload = function(e) {
+                    imagePreview.src = e.target.result;
+                    previewContainer.classList.remove('hidden');
+                    analyzeButton.classList.remove('hidden');
+                    resultContainer.classList.add('hidden');
                 };
                 reader.readAsDataURL(file);
             }
-        });
+        }
 
-        // 拖拽事件
-        document.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-        }, false);
-
-        document.addEventListener('drop', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            const file = e.dataTransfer.files[0];
-            if (file && file.type.startsWith('image/')) {
-                fileInput.files = e.dataTransfer.files;
-                const changeEvent = new Event('change');
-                fileInput.dispatchEvent(changeEvent);
-            }
-        }, false);
-
-        // API Key Modal 逻辑
-        saveKeyButton.addEventListener('click', () => {
-            const key = apiKeyInput.value.trim();
-            if (key) {
-                localStorage.setItem('gemini_api_key', key);
-                apiKey = key;
-                apiKeyModal.classList.add('hidden');
-            } else {
-                alert("请输入有效的 API Key。");
-            }
-        });
-
-        changeKeyButton.addEventListener('click', () => {
-            apiKeyModal.classList.remove('hidden');
-        });
-
-        // 分析按钮点击事件
-        analyzeButton.addEventListener('click', async () => {
-            if (!uploadedFile) {
-                alert("请先选择一张照片。");
+        async function analyzePhoto() {
+            if (!selectedFile) {
+                alert('请先选择一张照片！');
                 return;
             }
 
             if (!apiKey) {
-                apiKeyModal.classList.remove('hidden');
+                alert('请在代码中设置你的 API 密钥！');
                 return;
             }
 
-            // 禁用按钮并显示加载状态
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            const analyzeButton = document.getElementById('analyzeButton');
+            const resultContainer = document.getElementById('resultContainer');
+            const analysisResult = document.getElementById('analysisResult');
+
             analyzeButton.disabled = true;
-            buttonText.innerHTML = `<span class="loading-spinner"></span>`;
-            previewImage.classList.remove('hidden');
-            resultDisplay.classList.remove('hidden');
-            resultDisplay.textContent = "正在分析中，请稍候...";
-            alertMessage.classList.add('hidden');
+            analyzeButton.classList.add('opacity-50', 'cursor-not-allowed');
+            loadingIndicator.classList.remove('hidden');
+            resultContainer.classList.add('hidden');
+            analysisResult.innerHTML = '<p class="text-gray-700 leading-relaxed"></p>';
             
-            // 使用 FileReader 将文件读取为数据 URL
-            const reader = new FileReader();
-            reader.onloadend = async () => {
-                const img = new Image();
-                img.onload = async () => {
-                    // 创建一个 canvas 元素用于压缩
-                    const canvas = document.createElement('canvas');
-                    const ctx = canvas.getContext('2d');
+            try {
+                const base64Data = await new Promise(resolve => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => resolve(reader.result.split(',')[1]);
+                    reader.readAsDataURL(selectedFile);
+                });
 
-                    // 定义最大尺寸
-                    const maxWidth = 1200;
-                    const maxHeight = 1200;
+                const mimeType = selectedFile.type;
+                const userPrompt = "你是一位专业的摄影导师。请从构图、色彩、光线和主题表达等几个方面详细分析这张照片，并给出具体的改进建议。请用中文回答。";
 
-                    let width = img.width;
-                    let height = img.height;
-
-                    // 按比例缩放以适应最大尺寸
-                    if (width > height) {
-                        if (width > maxWidth) {
-                            height = height * (maxWidth / width);
-                            width = maxWidth;
-                        }
-                    } else {
-                        if (height > maxHeight) {
-                            width = width * (maxHeight / height);
-                            height = maxHeight;
-                        }
-                    }
-
-                    // 设置 canvas 尺寸并绘制压缩后的图片
-                    canvas.width = width;
-                    canvas.height = height;
-                    ctx.drawImage(img, 0, 0, width, height);
-
-                    // 将 canvas 内容转换为 Base64，并以 JPEG 格式和 0.7 质量进行压缩
-                    const resizedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
-                    const base64Image = resizedDataUrl.split(',')[1];
-
-                    try {
-                        const analysisResult = await analyzeImage(base64Image, apiKey);
-                        resultDisplay.innerHTML = analysisResult.replace(/\n/g, '<br>');
-                    } catch (error) {
-                        console.error("Analysis failed:", error);
-                        resultDisplay.textContent = "分析失败，请检查您的 API Key 或网络连接。";
-                        alertMessage.classList.remove('hidden');
-                    } finally {
-                        // 恢复按钮状态
-                        analyzeButton.disabled = false;
-                        buttonText.innerHTML = `获取分析`;
-                    }
+                const payload = {
+                    contents: [{
+                        parts: [
+                            { text: userPrompt },
+                            {
+                                inlineData: {
+                                    mimeType: mimeType,
+                                    data: base64Data
+                                }
+                            }
+                        ]
+                    }],
                 };
-                img.src = reader.result;
-            };
-            reader.readAsDataURL(uploadedFile);
-        });
 
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error.message || 'API 请求失败');
+                }
+
+                const result = await response.json();
+                const advice = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+                if (advice) {
+                    analysisResult.innerHTML = advice.replace(/\n/g, '<br>');
+                } else {
+                    analysisResult.innerHTML = '<p class="text-red-500">无法从 API 获取有效建议。请稍后重试。</p>';
+                }
+
+                resultContainer.classList.remove('hidden');
+
+            } catch (error) {
+                analysisResult.innerHTML = `<p class="text-red-500">分析失败：${error.message}</p>`;
+                resultContainer.classList.remove('hidden');
+            } finally {
+                loadingIndicator.classList.add('hidden');
+                analyzeButton.disabled = false;
+                analyzeButton.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+        }
     </script>
 </body>
 </html>
