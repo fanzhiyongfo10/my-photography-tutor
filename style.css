@@ -1,0 +1,30 @@
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #f3f4f6;
+}
+
+/* 调整主容器宽度，增加左右边距 */
+.container {
+    width: 98%;
+    max-width: 1400px;
+}
+
+.image-contain {
+    object-fit: contain;
+}
+
+/* 使右侧容器能够进行绝对定位 */
+.flex-container {
+    position: relative;
+}
+
+/* 右侧容器使用绝对定位以实现精确对齐 */
+@media (min-width: 768px) {
+    #response-container-wrapper {
+        position: absolute;
+        top: 0;
+        right: 0;
+        /* 调整宽度以适应小间隔 */
+        width: calc(50% - 1.5rem);
+    }
+}
