@@ -1,162 +1,72 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI 摄影导师</title>
+    <title>我的摄影导师 (优化版)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f3f4f6;
-        }
-    </style>
 </head>
-<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
 
-    <div class="bg-white p-8 rounded-2xl shadow-xl max-w-lg w-full text-center space-y-6">
-        <h1 class="text-3xl font-bold text-gray-800">AI 摄影导师</h1>
-        <p class="text-gray-600">选择一张照片，让 AI 导师为你提供专业的摄影分析和改进建议。</p>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-2 md:p-4">
+    <div class="container mx-auto bg-white rounded-xl shadow-2xl overflow-hidden p-6 md:p-10">
+        <h1 class="text-3xl md:text-4xl font-bold text-center text-gray-800 mb-6">我的摄影导师</h1>
+        <p class="text-center text-gray-600 mb-8">
+            上传一张照片并提问，我会为您提供专业的分析和建议。
+        </p>
 
-        <!-- 文件输入区域 -->
-        <input type="file" id="fileInput" accept="image/*" class="hidden" onchange="previewImage()">
-        <label for="fileInput" class="cursor-pointer bg-blue-500 text-white py-3 px-6 rounded-full font-semibold hover:bg-blue-600 transition duration-300 shadow-md">
-            选择照片
-        </label>
+        <!-- 主布局容器，使用 flex 布局 -->
+        <div class="flex flex-col md:flex-row gap-6 md:gap-10 flex-container">
 
-        <!-- 图像预览 -->
-        <div id="previewContainer" class="hidden mt-4">
-            <img id="imagePreview" src="#" alt="图片预览" class="w-full h-auto rounded-xl shadow-inner border border-gray-300">
-        </div>
+            <!-- 左侧面板：图像上传和提示输入 -->
+            <div id="left-panel" class="w-full md:w-1/2 flex flex-col space-y-4">
+                <input type="file" id="image-input" accept="image/*" class="w-full text-sm text-gray-500
+                    file:mr-4 file:py-2 file:px-4
+                    file:rounded-full file:border-0
+                    file:text-sm file:font-semibold
+                    file:bg-indigo-50 file:text-indigo-700
+                    hover:file:bg-indigo-100" />
 
-        <!-- 分析按钮和加载指示器 -->
-        <button id="analyzeButton" onclick="analyzePhoto()" class="w-full bg-green-500 text-white py-3 px-6 rounded-full font-semibold hover:bg-green-600 transition duration-300 shadow-md hidden">
-            开始分析
-        </button>
-        <div id="loadingIndicator" class="hidden mt-4 flex justify-center items-center space-x-2">
-            <svg class="animate-spin h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            <span class="text-gray-600">分析中...</span>
-        </div>
+                <!-- 图像预览容器 -->
+                <div id="image-preview-container"
+                    class="hidden flex justify-center items-center h-auto p-4 border border-gray-300 rounded-lg bg-gray-50 overflow-hidden min-h-[300px]">
+                    <img id="image-preview" src="#" alt="Image preview" class="w-full h-full rounded-md image-contain">
+                </div>
 
-        <!-- 分析结果显示区域 -->
-        <div id="resultContainer" class="hidden mt-6 text-left">
-            <h2 class="text-2xl font-semibold text-gray-800 mb-2">分析结果</h2>
-            <div id="analysisResult" class="bg-gray-100 p-4 rounded-xl border border-gray-200">
-                <p class="text-gray-700 leading-relaxed"></p>
+                <textarea id="prompt-input"
+                    class="w-full h-32 p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition duration-200 resize-none"
+                    placeholder="输入你的问题，例如：请对这张照片进行专业的分析和评价。">专业的分析评价、改进建议</textarea>
+
+                <button id="send-btn"
+                    class="w-full px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg shadow-md hover:bg-indigo-700 transition duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                    发送分析请求
+                </button>
+            </div>
+
+            <!-- 右侧面板：AI 回答 -->
+            <div id="response-container-wrapper" class="w-full md:w-1/2 flex flex-col">
+                <div id="loading-spinner" class="hidden flex justify-center items-center h-full">
+                    <div
+                        class="w-8 h-8 border-4 border-t-4 border-gray-200 border-t-indigo-500 rounded-full animate-spin">
+                    </div>
+                    <span class="ml-3 text-gray-500">正在分析中...</span>
+                </div>
+                <!-- AI 回答框，通过 JavaScript 动态调整高度以与按钮上沿对齐 -->
+                <div id="response-container"
+                    class="flex-grow p-6 bg-gray-50 rounded-lg shadow-inner border border-gray-200 overflow-y-auto">
+                    <h2 class="text-xl font-semibold text-gray-700 mb-4">AI 回答</h2>
+                    <div id="response-output" class="text-gray-800 leading-relaxed whitespace-pre-wrap">
+                        <!-- AI response will be displayed here -->
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-
-    <script>
-        // 确保你的 API 密钥在这里
-        // 请将你的 Google Gemini API 密钥粘贴到下面双引号中。
-        const apiKey = "AIzaSyB0yrvRUgR8Mo_l36gdUlaa_LMj3ELeUEs"; 
-
-        let selectedFile = null;
-
-        function previewImage() {
-            const fileInput = document.getElementById('fileInput');
-            const previewContainer = document.getElementById('previewContainer');
-            const imagePreview = document.getElementById('imagePreview');
-            const analyzeButton = document.getElementById('analyzeButton');
-            const resultContainer = document.getElementById('resultContainer');
-            
-            const file = fileInput.files[0];
-            if (file) {
-                selectedFile = file;
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    imagePreview.src = e.target.result;
-                    previewContainer.classList.remove('hidden');
-                    analyzeButton.classList.remove('hidden');
-                    resultContainer.classList.add('hidden');
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-
-        async function analyzePhoto() {
-            if (!selectedFile) {
-                alert('请先选择一张照片！');
-                return;
-            }
-
-            if (!apiKey) {
-                alert('请在代码中设置你的 API 密钥！');
-                return;
-            }
-
-            const loadingIndicator = document.getElementById('loadingIndicator');
-            const analyzeButton = document.getElementById('analyzeButton');
-            const resultContainer = document.getElementById('resultContainer');
-            const analysisResult = document.getElementById('analysisResult');
-
-            analyzeButton.disabled = true;
-            analyzeButton.classList.add('opacity-50', 'cursor-not-allowed');
-            loadingIndicator.classList.remove('hidden');
-            resultContainer.classList.add('hidden');
-            analysisResult.innerHTML = '<p class="text-gray-700 leading-relaxed"></p>';
-            
-            try {
-                const base64Data = await new Promise(resolve => {
-                    const reader = new FileReader();
-                    reader.onloadend = () => resolve(reader.result.split(',')[1]);
-                    reader.readAsDataURL(selectedFile);
-                });
-
-                const mimeType = selectedFile.type;
-                const userPrompt = "你是一位专业的摄影导师。请从构图、色彩、光线和主题表达等几个方面详细分析这张照片，并给出具体的改进建议。请用中文回答。";
-
-                const payload = {
-                    contents: [{
-                        parts: [
-                            { text: userPrompt },
-                            {
-                                inlineData: {
-                                    mimeType: mimeType,
-                                    data: base64Data
-                                }
-                            }
-                        ]
-                    }],
-                };
-
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
-
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error.message || 'API 请求失败');
-                }
-
-                const result = await response.json();
-                const advice = result?.candidates?.[0]?.content?.parts?.[0]?.text;
-
-                if (advice) {
-                    analysisResult.innerHTML = advice.replace(/\n/g, '<br>');
-                } else {
-                    analysisResult.innerHTML = '<p class="text-red-500">无法从 API 获取有效建议。请稍后重试。</p>';
-                }
-
-                resultContainer.classList.remove('hidden');
-
-            } catch (error) {
-                analysisResult.innerHTML = `<p class="text-red-500">分析失败：${error.message}</p>`;
-                resultContainer.classList.remove('hidden');
-            } finally {
-                loadingIndicator.classList.add('hidden');
-                analyzeButton.disabled = false;
-                analyzeButton.classList.remove('opacity-50', 'cursor-not-allowed');
-            }
-        }
-    </script>
+    <script src="script.js"></script>
 </body>
+
 </html>
